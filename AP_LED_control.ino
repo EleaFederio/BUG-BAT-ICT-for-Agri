@@ -5,18 +5,6 @@ ESP8266WebServer server(80);
 int led = LED_BUILTIN;
 
 const char MAIN_page[] PROGMEM = R"=====(
-<!DOCTYPE html>
-<html>
-<body>
-
-<center>
-<h1>Smart Farm</h1>
-
-<h3> LED </h3>
-<button onclick="window.location = 'http://'+location.hostname+'/led/on'">On</button><button onclick="window.location = 'http://'+location.hostname+'/led/off'">Off</button>
-</center>
-</body>
-</html>
 
 )=====";
 
@@ -37,25 +25,24 @@ void handleLedOff() {
  digitalWrite(led, HIGH);
  server.send(200, "text/html", MAIN_page); 
 }
-
 void setup()
 {
   pinMode(led, OUTPUT);
   Serial.begin(115200);
   Serial.println();
 
-  boolean result = WiFi.softAP("myWiFi", "password");
-  if(result == true)
-  {
-    Serial.println("Ready");
-  }
-  else
-  {
-    Serial.println("Failed!");
-  }
+  WiFi.begin("bat_wifi", "password");
 
-  Serial.print("IP Address: ");
-  Serial.println(WiFi.softAPIP());
+  Serial.print("Connecting");
+  while (WiFi.status() != WL_CONNECTED)
+  {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println();
+
+  Serial.print("Connected, IP address: ");
+  Serial.println(WiFi.localIP());
   
   server.on("/", handleRoot);
   server.on("/led/on", handleLedOn);
@@ -65,7 +52,6 @@ void setup()
   Serial.println("HTTP server started");
 }
 
-void loop()
-{
+void loop() {
   server.handleClient();
 }
